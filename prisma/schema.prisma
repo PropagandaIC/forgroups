@@ -1,0 +1,450 @@
+// ForGroups – modello dati
+// Database: PostgreSQL (le ricerche usano il confronto senza maiuscole/minuscole di Postgres).
+// Importi in centesimi di euro (Int) per evitare errori di arrotondamento.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── Utenti e organizzazioni ───────────────────────────
+
+enum Role {
+  ADMIN // staff ForGroups
+  ORGANIZER // agenzia, tour operator, scuola, parrocchia…
+  RESTAURANT // ristoratore
+  AGENT // agente commerciale
+}
+
+enum Status {
+  ACTIVE
+  PENDING
+  DISABLED
+}
+
+enum OrgKind {
+  RESTAURANT
+  ORGANIZER
+}
+
+enum OrganizerType {
+  TOUR_OPERATOR
+  AGENZIA
+  AZIENDA
+  GUIDA
+  SCUOLA
+  UNIVERSITA
+  PARROCCHIA
+  ASSOCIAZIONE
+  WEDDING_PLANNER
+  EVENTI
+  PRIVATO
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  passwordHash   String
+  name           String
+  phone          String?
+  role           Role
+  status         Status        @default(PENDING)
+  locale         String        @default("it")
+  organizationId String?
+  organization   Organization? @relation("OrgMembers", fields: [organizationId], references: [id])
+  lastLoginAt    DateTime?
+  agentShare     Int? // agenti: quota della provvigione ForGroups in punti base (2000 = 20%)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  agentOf           Organization[] @relation("OrgAgent")
+  bookingsCreated   Booking[]      @relation("BookingCreatedBy")
+  inquiriesAssigned Inquiry[]      @relation("InquiryAssignee")
+  messages          Message[]
+  events            Event[]
+  agentPayouts      AgentPayout[]
+
+  @@index([role, status])
+}
+
+model Organization {
+  id                    String         @id @default(cuid())
+  kind                  OrgKind
+  organizerType         OrganizerType?
+  status                Status         @default(PENDING)
+  name                  String
+  slug                  String         @unique
+  // contatti
+  email                 String?
+  phone                 String?
+  website               String?
+  // indirizzo
+  address               String?
+  zip                   String?
+  city                  String?
+  citySlug              String?
+  province              String?
+  country               String         @default("IT")
+  lat                   Float?
+  lng                   Float?
+  // fatturazione
+  billingName           String?
+  vatNumber             String?
+  fiscalCode            String?
+  sdiCode               String?
+  pec                   String?
+  iban                  String?
+  // contenuti pubblici (ristoranti)
+  tagline               String?
+  description           String?        @db.Text
+  descriptionEn         String?        @db.Text
+  coverImage            String?
+  images                String?        @db.Text // JSON array di URL
+  cuisine               String? // es. "Romana, Pesce"
+  tags                  String? // es. "Studenti,Pellegrini,Incentive"
+  openingHours          String? // testo breve
+  maxCapacity           Int?
+  featured              Boolean        @default(false)
+  // condizioni commerciali
+  commissionRate        Int            @default(1000) // in punti base: 1000 = 10,00%
+  agentId               String?
+  agent                 User?          @relation("OrgAgent", fields: [agentId], references: [id])
+  contractDate          DateTime?
+  contractNotes         String?        @db.Text
+  // pagamenti Stripe Connect (solo ristoranti)
+  stripeAccountId       String?        @unique
+  stripeTransfersActive Boolean        @default(false)
+  stripeCheckedAt       DateTime?
+  acceptsOnlinePayment  Boolean        @default(true)
+  defaultPaymentMode    PaymentMode    @default(ONLINE_FULL)
+  defaultDepositPercent Int            @default(30)
+
+  internalNotes String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  members          User[]        @relation("OrgMembers")
+  rooms            Room[]
+  services         ServiceSlot[]
+  menus            Menu[]
+  bookingsAsVenue  Booking[]     @relation("BookingRestaurant")
+  bookingsAsClient Booking[]     @relation("BookingOrganizer")
+  inquiries        Inquiry[]     @relation("InquiryOrganizer")
+  quoteOptions     QuoteOption[]
+  favorites        Favorite[]    @relation("FavoriteRestaurant")
+  favoritedBy      Favorite[]    @relation("FavoriteOrganizer")
+
+  @@index([kind, status])
+  @@index([citySlug])
+}
+
+model Favorite {
+  organizerId  String
+  restaurantId String
+  organizer    Organization @relation("FavoriteOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+  restaurant   Organization @relation("FavoriteRestaurant", fields: [restaurantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  @@id([organizerId, restaurantId])
+}
+
+// ─────────────────────────── Offerta del ristorante ───────────────────────────
+
+model Room {
+  id           String        @id @default(cuid())
+  restaurantId String
+  restaurant   Organization  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  capacity     Int
+  createdAt    DateTime      @default(now())
+  services     ServiceSlot[]
+  bookings     Booking[]
+}
+
+model ServiceSlot {
+  id            String        @id @default(cuid())
+  restaurantId  String
+  restaurant    Organization  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  roomId        String
+  room          Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  kind          String // Pranzo, Cena, Aperitivo, Cooking class…
+  startTime     String // "12:00"
+  endTime       String // "15:00"
+  weekdays      String        @default("1234567") // 1=lun … 7=dom
+  validFrom     DateTime?
+  validTo       DateTime?
+  leadTimeHours Int           @default(24) // prenotabile fino a N ore prima
+  active        Boolean       @default(true)
+  menus         MenuService[]
+  bookings      Booking[]
+}
+
+model Menu {
+  id           String        @id @default(cuid())
+  restaurantId String
+  restaurant   Organization  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?       @db.Text
+  courses      String?       @db.Text // JSON: [{ course: "Primo", items: ["…"] }]
+  priceCents   Int
+  minPax       Int           @default(10)
+  maxPax       Int           @default(100)
+  freeEvery    Int? // 1 gratuità ogni N paganti (capogruppo/autista)
+  audience     String? // Studenti, Adulti, Pellegrini…
+  active       Boolean       @default(true)
+  position     Int           @default(0)
+  services     MenuService[]
+  bookings     Booking[]
+  quoteOptions QuoteOption[]
+}
+
+model MenuService {
+  menuId    String
+  serviceId String
+  menu      Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  service   ServiceSlot @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([menuId, serviceId])
+}
+
+// ─────────────────────────── Prenotazioni e pagamenti ───────────────────────────
+
+enum BookingStatus {
+  REQUESTED // inviata, in attesa del ristorante
+  CONFIRMED
+  DECLINED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum PaymentMode {
+  ONLINE_FULL // pagamento online anticipato (Stripe)
+  ONLINE_DEPOSIT // acconto online + saldo sul posto
+  ON_SITE // tutto sul posto, provvigione fatturata al ristorante
+  INVOICE // bonifico su fattura
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  code         String        @unique // FG-10078
+  status       BookingStatus @default(REQUESTED)
+  restaurantId String
+  restaurant   Organization  @relation("BookingRestaurant", fields: [restaurantId], references: [id])
+  organizerId  String?
+  organizer    Organization? @relation("BookingOrganizer", fields: [organizerId], references: [id])
+  createdById  String?
+  createdBy    User?         @relation("BookingCreatedBy", fields: [createdById], references: [id])
+  inquiryId    String?       @unique
+  inquiry      Inquiry?      @relation(fields: [inquiryId], references: [id])
+
+  // cliente / gruppo
+  contactName      String
+  contactEmail     String?
+  contactPhone     String?
+  groupName        String?
+  groupType        String? // Studenti, Pellegrini, Aziendale…
+  groupLeader      String?
+  groupLeaderPhone String?
+  language         String?
+
+  // servizio
+  date         DateTime // giorno del servizio (00:00 UTC)
+  time         String // "19:30"
+  serviceId    String?
+  service      ServiceSlot? @relation(fields: [serviceId], references: [id])
+  roomId       String?
+  room         Room?        @relation(fields: [roomId], references: [id])
+  menuId       String?
+  menu         Menu?        @relation(fields: [menuId], references: [id])
+  menuChoices  String?      @db.Text // JSON con scelte del menu composto
+  pax          Int
+  freePax      Int          @default(0)
+  dietaryNotes String?      @db.Text
+
+  // economia
+  priceCents      Int // prezzo a persona
+  extrasCents     Int           @default(0)
+  totalCents      Int
+  commissionRate  Int // punti base al momento della prenotazione
+  commissionCents Int
+  paymentMode     PaymentMode   @default(ONLINE_FULL)
+  depositPercent  Int?
+  paymentStatus   PaymentStatus @default(UNPAID)
+  paidCents       Int           @default(0)
+  paymentDueAt    DateTime?
+
+  notes         String?   @db.Text // visibili a cliente e ristorante
+  internalNotes String?   @db.Text // solo staff
+  source        String    @default("platform") // platform | admin | inquiry | import
+  confirmedAt   DateTime?
+  cancelledAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  payments Payment[]
+  messages Message[]
+
+  @@index([date])
+  @@index([status])
+  @@index([restaurantId, date])
+  @@index([organizerId, date])
+}
+
+enum PaymentRecordStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+model Payment {
+  id                  String              @id @default(cuid())
+  bookingId           String
+  booking             Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  kind                String // full | deposit | balance | manual
+  method              String              @default("stripe") // stripe | bonifico | contanti
+  amountCents         Int
+  applicationFeeCents Int                 @default(0) // provvigione trattenuta da ForGroups
+  status              PaymentRecordStatus @default(PENDING)
+  stripeCheckoutId    String?             @unique
+  stripePaymentIntent String?
+  checkoutUrl         String?             @db.Text
+  paidAt              DateTime?
+  createdAt           DateTime            @default(now())
+}
+
+// ─────────────────────────── Richieste e preventivi (pipeline) ───────────────────────────
+
+enum InquiryStage {
+  NEW
+  QUALIFIED // in lavorazione
+  QUOTED // preventivo inviato
+  WON
+  LOST
+}
+
+model Inquiry {
+  id           String        @id @default(cuid())
+  code         String        @unique // RQ-3620
+  stage        InquiryStage  @default(NEW)
+  source       String        @default("website") // website | email | phone | ai | portal
+  organizerId  String?
+  organizer    Organization? @relation("InquiryOrganizer", fields: [organizerId], references: [id])
+  contactName  String
+  company      String?
+  email        String?
+  phone        String?
+  language     String?
+  city         String?
+  date         DateTime?
+  time         String?
+  pax          Int?
+  groupType    String?
+  serviceKind  String?
+  budgetCents  Int? // budget a persona
+  message      String?       @db.Text
+  restaurantId String? // ristorante di interesse (se arriva dalla scheda)
+  assigneeId   String?
+  assignee     User?         @relation("InquiryAssignee", fields: [assigneeId], references: [id])
+  lostReason   String?
+  aiSummary    String?       @db.Text
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  quoteOptions QuoteOption[]
+  messages     Message[]
+  booking      Booking?
+
+  @@index([stage])
+}
+
+model QuoteOption {
+  id           String       @id @default(cuid())
+  inquiryId    String
+  inquiry      Inquiry      @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  restaurantId String
+  restaurant   Organization @relation(fields: [restaurantId], references: [id])
+  menuId       String?
+  menu         Menu?        @relation(fields: [menuId], references: [id])
+  priceCents   Int
+  note         String?
+  chosen       Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+}
+
+// ─────────────────────────── Comunicazione e storico ───────────────────────────
+
+model Message {
+  id        String   @id @default(cuid())
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  inquiryId String?
+  inquiry   Inquiry? @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  body      String   @db.Text
+  internal  Boolean  @default(false) // nota interna staff, invisibile a clienti/ristoranti
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([inquiryId])
+}
+
+// Storico eventi (log modifiche, pagamenti, cambi stato)
+model Event {
+  id         String   @id @default(cuid())
+  entityType String // booking | inquiry | organization | payment
+  entityId   String
+  action     String // created | status_changed | updated | payment_succeeded …
+  summary    String
+  data       String?  @db.Text
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────── Agenti ───────────────────────────
+
+model AgentPayout {
+  id           String    @id @default(cuid())
+  agentId      String
+  agent        User      @relation(fields: [agentId], references: [id])
+  period       String // "2026-10"
+  revenueCents Int
+  amountCents  Int
+  paid         Boolean   @default(false)
+  paidAt       DateTime?
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  @@unique([agentId, period])
+}
+
+// ─────────────────────────── Configurazioni ───────────────────────────
+
+model Setting {
+  key   String @id
+  value String @db.Text
+}
+
+model Counter {
+  name  String @id
+  value Int
+}
