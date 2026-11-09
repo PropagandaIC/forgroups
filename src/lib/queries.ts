@@ -1,14 +1,24 @@
 import { db } from "./db";
 
-/** Città con almeno un ristorante attivo, ordinate per numero di locali */
-export async function activeCities() {
-  const rows = await db.organization.groupBy({
-    by: ["city", "citySlug"],
-    where: { kind: "RESTAURANT", status: "ACTIVE", citySlug: { not: null } },
-    _count: { _all: true },
-    orderBy: { _count: { id: "desc" } },
+export type CityInfo = { name: string; slug: string; count: number; image: string | null; hero: string | null };
+
+/** Città con almeno un ristorante attivo (con le foto della città), ordinate per numero di locali */
+export async function activeCities(): Promise<CityInfo[]> {
+  const [rows, meta] = await Promise.all([
+    db.organization.groupBy({
+      by: ["citySlug"],
+      where: { kind: "RESTAURANT", status: "ACTIVE", citySlug: { not: null } },
+      _count: { _all: true },
+      _min: { city: true },
+      orderBy: { _count: { id: "desc" } },
+    }),
+    db.city.findMany(),
+  ]);
+  const bySlug = new Map(meta.map((c) => [c.slug, c]));
+  return rows.map((r) => {
+    const m = bySlug.get(r.citySlug!);
+    return { slug: r.citySlug!, name: m?.name ?? r._min.city ?? r.citySlug!, count: r._count._all, image: m?.image ?? null, hero: m?.hero ?? null };
   });
-  return rows.map((r) => ({ name: r.city ?? "", slug: r.citySlug ?? "", count: r._count._all }));
 }
 
 /** Prezzo minimo dei menu attivi per ristorante */

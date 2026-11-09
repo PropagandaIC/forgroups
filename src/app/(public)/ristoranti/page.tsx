@@ -49,7 +49,8 @@ export default async function Ristoranti({ searchParams }: { searchParams: Promi
     list.sort((a, b) => Number(avail.get(b.id)?.ok) - Number(avail.get(a.id)?.ok));
   }
 
-  const cityName = cities.find((c) => c.slug === sp.citta)?.name;
+  const city = cities.find((c) => c.slug === sp.citta);
+  const cityName = city?.name;
   const qs = (p: number) => {
     const u = new URLSearchParams(Object.entries(sp).filter(([, v]) => v) as [string, string][]);
     u.set("pagina", String(p));
@@ -59,17 +60,29 @@ export default async function Ristoranti({ searchParams }: { searchParams: Promi
   return (
     <>
       <PublicHeader />
-      <div className="border-b border-ink-100 bg-ink-50">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <div className="relative isolate overflow-hidden border-b border-ink-100 bg-ink-950">
+        {(city?.hero ?? city?.image) && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={(city!.hero ?? city!.image)!} alt="" referrerPolicy="no-referrer" className="absolute inset-0 -z-10 size-full object-cover opacity-50" />
+        )}
+        <div className={`absolute inset-0 -z-10 ${city ? "bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/30" : "bg-ink-950"}`} />
+        <div className={`mx-auto max-w-7xl px-4 sm:px-6 ${city ? "pt-16 pb-8" : "py-6"}`}>
+          {city && (
+            <div className="mb-6">
+              <div className="text-sm font-medium text-brand-300">Ristoranti per gruppi</div>
+              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{city.name}</h1>
+              <p className="mt-1 text-ink-300">{city.count} locali selezionati per tour, scuole, pellegrinaggi ed eventi</p>
+            </div>
+          )}
           <SearchBar cities={cities} defaults={sp} compact />
         </div>
       </div>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Ristoranti per gruppi{cityName ? ` a ${cityName}` : ""}
-            </h1>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              {cityName ? `${total} ristoranti a ${cityName}` : "Ristoranti per gruppi"}
+            </h2>
             <p className="mt-1 text-sm text-ink-500">
               {total} locali{date ? ` · disponibilità per ${dayLong(date)}` : ""}
               {pax ? ` · ${pax} persone` : ""}
@@ -91,7 +104,7 @@ export default async function Ristoranti({ searchParams }: { searchParams: Promi
             </Empty>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {list.map((r) => (
               <RestaurantCard key={r.id} r={r} minPrice={prices.get(r.id)} showPrice={showPrice} availability={date ? avail.get(r.id) : null} />
             ))}

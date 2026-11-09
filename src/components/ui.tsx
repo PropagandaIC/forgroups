@@ -184,8 +184,9 @@ export function Logo({ dark = false, className }: { dark?: boolean; className?: 
 /** Copertina del ristorante: foto se presente, altrimenti un motivo grafico coerente generato dal nome. */
 export function Cover({ name, src, className }: { name: string; src?: string | null; className?: string }) {
   if (src) {
+    // Foto ospitate sul sito attuale: collegate direttamente, senza copiarle
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name} className={clsx("object-cover", className)} />;
+    return <img src={src} alt={name} loading="lazy" decoding="async" referrerPolicy="no-referrer" className={clsx("bg-ink-200 object-cover", className)} />;
   }
   const hues = [28, 12, 42, 200, 160, 340, 265];
   const h = hues[[...name].reduce((s, c) => s + c.charCodeAt(0), 0) % hues.length]!;

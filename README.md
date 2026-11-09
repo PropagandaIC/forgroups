@@ -35,6 +35,20 @@ L'analisi del vecchio pannello da cui siamo partiti è in [`docs/01-analisi-pann
 - **Ristoratori** (`/ristoratore`), pensato per il telefono: conferma o rifiuto con un tocco, prossimi gruppi, gestione di sale, servizi, menu e chiusure, collegamento Stripe.
 - **Agenti** (`/agente`): ristoranti seguiti e commissioni maturate.
 
+## Dati e foto dal sito attuale
+
+`scripts/import-public-site.ts` legge le schede pubbliche di www.forgroups.it: 161 ristoranti pubblicati e 43 città. Per ogni ristorante prende nome, indirizzo, coordinate, categorie, descrizione, orari, servizi, menu e foto. Il risultato finisce in `prisma/data/ristoranti-pubblici.json`, e il seed lo usa per popolare il catalogo.
+
+```bash
+NODE_USE_ENV_PROXY=1 npx tsx scripts/import-public-site.ts   # la variabile serve solo dietro un proxy
+```
+
+**Le foto non vengono scaricate**: il nuovo sito le mostra direttamente dagli indirizzi originali (`https://www.forgroups.it/images/...`). Ogni ristorante conserva anche il suo `legacyId`, cioè l'ID del vecchio sistema, utile per la migrazione completa.
+
+> ⚠️ Prima di spegnere il vecchio sito su Aruba vanno copiate le foto su un nuovo spazio (es. Hostinger o uno storage di immagini). Altrimenti spariscono anche dal nuovo sito.
+
+Nei dati dimostrativi, nomi, indirizzi, descrizioni e foto dei ristoranti sono reali. **Prezzi dei menu, prenotazioni, agenzie, persone e incassi invece sono inventati.**
+
 ## Pagamenti per conto terzi (Stripe Connect)
 
 Modello "marketplace" con **destination charges**:
@@ -66,7 +80,7 @@ Le prenotazioni pagate sul posto restano supportate: la provvigione finisce in "
 cp .env.example .env        # compila DATABASE_URL e SESSION_SECRET
 npm install
 npx prisma migrate dev      # crea le tabelle
-npm run db:seed             # dati dimostrativi (inventati)
+npm run db:seed             # catalogo reale (da prisma/data) + prenotazioni dimostrative
 npm run dev                 # http://localhost:3000
 ```
 
@@ -90,4 +104,4 @@ Controlli: `npm run typecheck` · `npm run lint` · `npm run build`
 2. **Notifiche email e WhatsApp**: nuova prenotazione al ristorante, conferma e link di pagamento all'agenzia, solleciti automatici. Serve un servizio di invio (es. Postmark, Brevo).
 3. **Fatture elettroniche delle provvigioni**: generazione automatica e invio a SdI tramite un intermediario (es. Fatture in Cloud o Aruba API).
 4. Versione inglese del portale agenzie e delle schede ristorante.
-5. Caricamento foto direttamente dal pannello (oggi tramite URL).
+5. Caricamento foto direttamente dal pannello, e copia delle foto attuali prima della dismissione del vecchio sito.

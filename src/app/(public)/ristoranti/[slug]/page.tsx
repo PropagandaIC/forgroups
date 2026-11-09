@@ -6,6 +6,7 @@ import { PublicHeader } from "@/components/public-header";
 import { BookingWidget } from "@/components/booking-widget";
 import { InquiryForm } from "@/components/inquiry-form";
 import { Cover, LinkButton } from "@/components/ui";
+import { Gallery } from "@/components/gallery";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth";
 import { money } from "@/lib/format";
@@ -60,11 +61,12 @@ export default async function RestaurantPage({
           <ChevronLeft className="size-4" /> Tutti i ristoranti
         </Link>
 
-        <div className="mt-4 grid gap-3 overflow-hidden rounded-3xl md:grid-cols-4 md:grid-rows-2">
-          <Cover name={r.name} src={r.coverImage} className="aspect-[16/10] md:col-span-2 md:row-span-2 md:aspect-auto md:h-full" />
-          {(images.length ? images.slice(0, 4) : [null, null, null, null]).map((src, i) => (
-            <Cover key={i} name={`${r.name}${i}`} src={src} className="hidden aspect-[4/3] md:block" />
-          ))}
+        <div className="mt-4">
+          {images.length || r.coverImage ? (
+            <Gallery name={r.name} images={images} cover={r.coverImage} />
+          ) : (
+            <Cover name={r.name} className="h-[300px] rounded-3xl sm:h-[440px]" />
+          )}
         </div>
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_400px]">
@@ -83,7 +85,11 @@ export default async function RestaurantPage({
               </div>
             )}
             {r.tagline && <p className="mt-6 text-lg text-ink-700">{r.tagline}</p>}
-            {r.description && <div className="mt-4 space-y-3 whitespace-pre-line text-ink-600">{r.description}</div>}
+            {r.description && (
+              <div className="mt-4 space-y-3 whitespace-pre-line text-ink-600">
+                {r.tagline && r.description.startsWith(r.tagline) ? r.description.slice(r.tagline.length).trim() : r.description}
+              </div>
+            )}
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               <div className="card p-4">
@@ -177,7 +183,7 @@ export default async function RestaurantPage({
                       </p>
                       <div className="mt-3 flex gap-2">
                         <LinkButton href={`/accedi?next=/ristoranti/${r.slug}`} variant="primary" size="sm">Accedi</LinkButton>
-                        <LinkButton href="/registrati" size="sm" className="border-white/20 bg-transparent text-white hover:bg-white/10">Registrati</LinkButton>
+                        <LinkButton href="/registrati" variant="ghost" size="sm" className="border border-white/25 text-white hover:bg-white/10">Registrati</LinkButton>
                       </div>
                     </div>
                   )}

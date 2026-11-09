@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { Badge, Card, PageHeader } from "@/components/ui";
+import { Badge, Card, Cover, PageHeader } from "@/components/ui";
 import { activeCities } from "@/lib/queries";
 import { addDays, money0, n, pct } from "@/lib/format";
 
@@ -69,8 +69,13 @@ export default async function Ristoranti({ searchParams }: { searchParams: Promi
                   <tr key={r.id} className="relative hover:bg-brand-50/40">
                     <td className="px-4 py-3">
                       <Link href={`/admin/ristoranti/${r.id}`} className="absolute inset-0" aria-label={r.name} />
-                      <div className="font-medium">{r.name}</div>
-                      <div className="text-xs text-ink-500">{r.city} · max {r.maxCapacity ?? "?"}</div>
+                      <div className="flex items-center gap-3">
+                        <Cover name={r.name} src={r.coverImage} className="size-10 shrink-0 rounded-lg" />
+                        <div>
+                          <div className="font-medium">{r.name}</div>
+                          <div className="text-xs text-ink-500">{r.city} · max {r.maxCapacity ?? "?"}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3"><Badge tone={r.status === "ACTIVE" ? "green" : r.status === "PENDING" ? "violet" : "gray"}>{r.status === "ACTIVE" ? "Attivo" : r.status === "PENDING" ? "Da approvare" : "Disattivato"}</Badge></td>
                     <td className="px-4 py-3">{r.stripeTransfersActive ? <Badge tone="green">Attivi</Badge> : <Badge tone="amber">{r.stripeAccountId ? "In verifica" : "Da collegare"}</Badge>}</td>
