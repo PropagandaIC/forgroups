@@ -75,6 +75,19 @@ Le prenotazioni pagate sul posto restano supportate: la provvigione finisce in "
 - **Stripe** (Connect, Checkout, webhook) · **Claude** (Anthropic) per l'estrazione delle richieste
 - Autenticazione propria con password bcrypt e sessione firmata in cookie httpOnly. I permessi sono verificati sul server in ogni pagina e azione.
 
+## Provarla sul proprio computer (senza essere sviluppatori)
+
+1. Installa **Node.js 22** (nodejs.org, versione LTS) e **PostgreSQL**: su Mac va bene [Postgres.app](https://postgresapp.com), su Windows l'installer di postgresql.org (annota la password che scegli).
+2. Scarica il progetto dal branch `claude/optimistic-keller-7s4orl` (su GitHub: **Code → Download ZIP**) ed estrai la cartella.
+3. Nella cartella copia `.env.example` in un nuovo file chiamato `.env`. Nella riga `DATABASE_URL` metti la password di PostgreSQL (con Postgres.app: `postgresql://localhost:5432/forgroups`).
+4. Apri il Terminale (Mac) o PowerShell (Windows) nella cartella ed esegui, uno alla volta:
+   ```bash
+   npm install
+   npm run demo:setup
+   npm run dev
+   ```
+5. Apri http://localhost:3000. Gli account di prova sono nella tabella qui sotto.
+
 ## Avvio in locale
 ```bash
 cp .env.example .env        # compila DATABASE_URL e SESSION_SECRET
