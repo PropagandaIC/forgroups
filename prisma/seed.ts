@@ -97,7 +97,7 @@ type Source = {
   name: string; city: string; citySlug: string; province: string | null; address: string | null; zip: string | null;
   lat: number | null; lng: number | null; cuisine: string | null; tags: string | null; tagline: string | null; description: string | null;
   openingHours: string | null; capacity: number | null; cover: string | null; images: string[]; featured: boolean;
-  legacyId: number | null; sourceUrl: string | null; serviceKinds: string[];
+  legacyId: number | null; sourceUrl: string | null; serviceKinds: string[]; internalNotes?: string | null;
   menus: { name: string; courses: { course: string; items: string[] }[]; price: number; min: number; max: number; free: number | null; audience: string | null; description?: string | null }[];
 };
 
@@ -107,6 +107,15 @@ const SERVICE_HOURS: Record<string, [string, string]> = {
 };
 const CUISINE_TAGS = ["Carne", "Pesce", "Pizza", "Cucina italiana", "Cucina tipica regionale", "Romana", "Toscana", "Napoletana", "Veneziana", "Vegetariana", "Gourmet", "Sushi", "Cinese", "Indiana", "Americana", "Steakhouse", "Wine Bar", "Pub", "Birreria"];
 const DATA_FILE = join(__dirname, "data", "ristoranti-pubblici.json");
+/** Ristoranti arrivati direttamente (es. proposte via email), con menu e prezzi reali */
+const DIRECT_FILE = join(__dirname, "data", "ristoranti-diretti.json");
+
+function loadDirect(): Source[] {
+  if (!existsSync(DIRECT_FILE)) return [];
+  const data = JSON.parse(readFileSync(DIRECT_FILE, "utf8")) as { restaurants: Source[] };
+  console.log(`  + ${data.restaurants.length} ristoranti arrivati direttamente (menu e prezzi reali)`);
+  return data.restaurants.map((r) => ({ ...r, legacyId: null, sourceUrl: null }));
+}
 
 function menuFromName(name: string, courses: string[]) {
   const n = name.toLowerCase();
@@ -217,7 +226,7 @@ async function main() {
 
   console.log("Ristoranti…");
   const restaurants = [];
-  const sources = loadSources();
+  const sources = [...loadDirect(), ...loadSources()];
   for (const [i, src] of sources.entries()) {
     const capacity = src.capacity ?? pick([60, 80, 100, 120, 150, 200]);
     const r = await db.organization.create({
@@ -247,6 +256,7 @@ async function main() {
         coverImage: src.cover,
         images: src.images.length ? JSON.stringify(src.images) : null,
         openingHours: src.openingHours,
+        internalNotes: src.internalNotes ?? null,
         maxCapacity: capacity,
         featured: src.featured,
         commissionRate: pick([1000, 1000, 1200, 1500]),

@@ -1,0 +1,131 @@
+{
+  "nota": "Ristoranti arrivati direttamente a ForGroups (non presenti sul vecchio sito). Prezzi e menu sono quelli inviati dal ristorante; i contatti reali restano solo nelle note interne.",
+  "restaurants": [
+    {
+      "name": "Il Borgo di Bagnaia",
+      "city": "Viterbo",
+      "citySlug": "viterbo",
+      "province": "VT",
+      "address": "Piazza XX Settembre, 7/8 – Bagnaia",
+      "zip": "01100",
+      "lat": 42.4269,
+      "lng": 12.1567,
+      "cuisine": "Cucina tipica regionale, Pizza",
+      "tags": "Adulti, Studenti, Turistico, Gelateria",
+      "tagline": "Bar, gelateria, ristorante e pizzeria nella piazza di Bagnaia, a circa 200 metri da Villa Lante: il pranzo ideale dopo la visita ai giardini restaurati.",
+      "description": "Il Borgo è bar, gelateria, ristorante e pizzeria nel cuore del borgo medievale di Bagnaia (Viterbo), in piazza XX Settembre, a circa 200 metri dall'ingresso di Villa Lante.\n\nVilla Lante si presenta rinnovata dopo i restauri dei giardini inaugurati nel luglio 2026: fontane monumentali e giochi d'acqua restaurati, le 12 fontanine tornate visibili nel Giardino del Quadrato e le visite agli interni delle Palazzine Gambara e Montalto secondo l'orario ufficiale. Il Borgo propone di abbinare alla visita un pranzo con menu dedicati.\n\nPer i gruppi organizzati ci sono quattro menu completi con piatti della tradizione viterbese, dolce della casa, vino e acqua inclusi (da 25 a 35 €). Per le scolaresche, quattro menu semplici da 15 a 24 €. Nel periodo autunno-inverno i primi si possono sostituire con una zuppa tipica (acqua cotta viterbese o zuppa di ceci e castagne), in primavera-estate con un primo di stagione.\n\nPersonalizzazioni, esigenze alimentari e condizioni dedicate si concordano su richiesta.",
+      "openingHours": null,
+      "capacity": null,
+      "cover": "/demo/il-borgo-bagnaia/villa-lante-giardini.jpg",
+      "images": [
+        "/demo/il-borgo-bagnaia/villa-lante-giardini.jpg",
+        "/demo/il-borgo-bagnaia/menu-gruppi-2026-2027.jpg",
+        "/demo/il-borgo-bagnaia/menu-studenti-2026-2027.jpg",
+        "/demo/il-borgo-bagnaia/villa-lante-rinasce-2027.jpg"
+      ],
+      "featured": true,
+      "serviceKinds": ["Pranzo", "Cena"],
+      "internalNotes": "Proposta ricevuta da Roberta il 18/11/2026 (oggetto: \"Villa Lante rinasce – Proposte per gruppi turistici 2027\").\nContatti reali (solo per lo staff): tel. 0761 289777 · WhatsApp 346 1525801 · ilborgo1957@gmail.com · www.ilborgodibagnaia.it\nDA VERIFICARE con il ristorante: capienza e sale, orari e giorno di chiusura, gratuità (accompagnatori/autista), minimo persone, parcheggio bus, provvigione.",
+      "menus": [
+        {
+          "name": "Menu Pegaso",
+          "audience": "Adulti",
+          "price": 25, "min": 10, "max": 150, "free": null,
+          "description": "Autunno-inverno: il primo si può sostituire con acqua cotta viterbese o zuppa di ceci e castagne. Primavera-estate: con risotto alle meraviglie dell'orto e stracciatella di bufala, o gnocchi con pomodorino, fiori di zucca e zucchine.",
+          "courses": [
+            { "course": "Antipasto", "items": ["Tortino di asparagi e chips di capocollo"] },
+            { "course": "Primo", "items": ["Lombrichelli al ragù viterbese"] },
+            { "course": "Secondo", "items": ["Finissima di maialino alle mele con cicoria ripassata"] },
+            { "course": "Dolce", "items": ["Dolce della casa"] },
+            { "course": "Bevande", "items": ["Vino bianco o rosso", "Acqua"] }
+          ]
+        },
+        {
+          "name": "Menu Castoro",
+          "audience": "Adulti",
+          "price": 28, "min": 10, "max": 150, "free": null,
+          "description": "Primi sostituibili con le proposte di stagione (zuppe tipiche in autunno-inverno, primi dell'orto in primavera-estate).",
+          "courses": [
+            { "course": "Antipasto", "items": ["Selezione di salumi locali", "Pecorino di grotta", "Crostino al patè"] },
+            { "course": "Primo", "items": ["Stracci bagnaioli all'amatriciana"] },
+            { "course": "Secondo", "items": ["Filetto di maiale alle prugne con bieta burro e pepe"] },
+            { "course": "Dolce", "items": ["Dolce della casa"] },
+            { "course": "Bevande", "items": ["Vino bianco o rosso", "Acqua"] }
+          ]
+        },
+        {
+          "name": "Menu Conservone",
+          "audience": "Adulti",
+          "price": 32, "min": 10, "max": 150, "free": null,
+          "description": "Primi sostituibili con le proposte di stagione (zuppe tipiche in autunno-inverno, primi dell'orto in primavera-estate).",
+          "courses": [
+            { "course": "Antipasto", "items": ["Flan di patate e funghi con fonduta di formaggio"] },
+            { "course": "Primo", "items": ["Paccheri artigianali con funghi porcini e guanciale croccante"] },
+            { "course": "Secondo", "items": ["Grigliata mista di carni con patate al forno"] },
+            { "course": "Dolce", "items": ["Dolce della casa"] },
+            { "course": "Bevande", "items": ["Vino bianco o rosso", "Acqua"] }
+          ]
+        },
+        {
+          "name": "Menu Tritone (pesce)",
+          "audience": "Adulti",
+          "price": 35, "min": 10, "max": 150, "free": null,
+          "description": "Menu di pesce. Primo sostituibile con le proposte di stagione.",
+          "courses": [
+            { "course": "Antipasto", "items": ["Insalata di mare con verdure croccanti, pomodorini e olive"] },
+            { "course": "Primo", "items": ["Risotto alle primizie del mare"] },
+            { "course": "Secondo", "items": ["Filetto di branzino in crosta di zucchine e patate con insalata misticanza"] },
+            { "course": "Dolce", "items": ["Dolce della casa"] },
+            { "course": "Bevande", "items": ["Vino bianco o rosso", "Acqua"] }
+          ]
+        },
+        {
+          "name": "Studenti Pegaso",
+          "audience": "Studenti",
+          "price": 15, "min": 15, "max": 150, "free": null,
+          "description": "Modifiche e variazioni su richiesta.",
+          "courses": [
+            { "course": "Primo", "items": ["Pennette al pomodoro"] },
+            { "course": "Secondo", "items": ["Cotoletta con patatine fritte"] },
+            { "course": "Bevande", "items": ["Acqua"] }
+          ]
+        },
+        {
+          "name": "Studenti Conservone",
+          "audience": "Studenti",
+          "price": 18, "min": 15, "max": 150, "free": null,
+          "description": "Modifiche e variazioni su richiesta.",
+          "courses": [
+            { "course": "Antipasto", "items": ["Flan di patate e provola con salsa di parmigiano"] },
+            { "course": "Primo", "items": ["Lasagna al forno"] },
+            { "course": "Contorno", "items": ["Patatine fritte"] },
+            { "course": "Bevande", "items": ["Acqua"] }
+          ]
+        },
+        {
+          "name": "Studenti Castoro",
+          "audience": "Studenti",
+          "price": 20, "min": 15, "max": 150, "free": null,
+          "description": "Modifiche e variazioni su richiesta.",
+          "courses": [
+            { "course": "Antipasto", "items": ["Prosciutto e mozzarella"] },
+            { "course": "Primo", "items": ["Mezze maniche al ragù"] },
+            { "course": "Secondo", "items": ["Coscio di pollo con patate"] },
+            { "course": "Bevande", "items": ["Acqua"] }
+          ]
+        },
+        {
+          "name": "Studenti Tritone",
+          "audience": "Studenti",
+          "price": 24, "min": 15, "max": 150, "free": null,
+          "description": "Modifiche e variazioni su richiesta.",
+          "courses": [
+            { "course": "Antipasto", "items": ["Selezione di salumi e formaggi della Tuscia"] },
+            { "course": "Secondo", "items": ["Grigliata di carne con patate al forno"] },
+            { "course": "Bevande", "items": ["Acqua"] }
+          ]
+        }
+      ]
+    }
+  ]
+}
